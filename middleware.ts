@@ -15,6 +15,10 @@ export function middleware(request: NextRequest) {
     }
 
     if (isAuthPage && token) {
+        const role = request.cookies.get("user-role")?.value;
+        if (role === "admin") {
+            return NextResponse.redirect(new URL("/admin", request.url));
+        }
         return NextResponse.redirect(new URL("/dashboard", request.url));
     }
 

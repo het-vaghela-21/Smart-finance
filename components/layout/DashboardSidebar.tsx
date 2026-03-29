@@ -92,7 +92,7 @@ export function DashboardSidebar() {
                                 : "text-zinc-400 hover:text-orange-400 hover:bg-orange-500/5 border border-transparent"
                         )}
                     >
-                        <Shield className="w-5 h-5 flex-shrink-0" />
+                        <Shield className={cn("w-5 h-5 flex-shrink-0", pathname === "/admin" ? "text-orange-400" : "text-zinc-400 group-hover:text-orange-400")} />
                         <span className={cn("transition-all duration-300 whitespace-nowrap", isCollapsed ? "opacity-0 w-0 hidden" : "opacity-100")}>
                             Admin Panel
                         </span>
@@ -104,6 +104,8 @@ export function DashboardSidebar() {
                     </Link>
                 )}
             </div>
+
+            <div className="mt-auto"></div>
 
             {/* User Info */}
             {!isCollapsed && user && (

@@ -67,18 +67,22 @@ export default function DashboardPage() {
                             <PieChart className="w-5 h-5 text-primary" /> Top Categories
                         </h2>
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                            {["Food", "Shopping", "Jewellery", "Stocks", "Travel", "Miscellaneous"].map(category => {
-                                const catTotal = transactions
-                                    .filter(t => t.category === category && t.type === 'debit')
-                                    .reduce((sum, t) => sum + t.amount, 0);
+                            {Array.from(new Set(transactions.map(t => t.category))).length > 0 ? (
+                                Array.from(new Set(transactions.map(t => t.category))).map(category => {
+                                    const catTotal = transactions
+                                        .filter(t => t.category === category)
+                                        .reduce((sum, t) => sum + t.amount, 0);
 
-                                return (
-                                    <div key={category} className="p-4 rounded-xl bg-white/5 border border-white/10 hover:border-primary/50 transition-colors">
-                                        <div className="text-xs text-zinc-400 font-semibold mb-1">{category}</div>
-                                        <div className="text-lg font-bold text-white">₹{catTotal.toFixed(2)}</div>
-                                    </div>
-                                );
-                            })}
+                                    return (
+                                        <div key={category} className="p-4 rounded-xl bg-white/5 border border-white/10 hover:border-primary/50 transition-colors">
+                                            <div className="text-xs text-zinc-400 font-semibold mb-1">{category}</div>
+                                            <div className="text-lg font-bold text-white">₹{catTotal.toFixed(2)}</div>
+                                        </div>
+                                    );
+                                })
+                            ) : (
+                                <div className="col-span-full text-zinc-500 text-sm py-4">No categories recorded yet.</div>
+                            )}
                         </div>
                     </div>
                 </div>

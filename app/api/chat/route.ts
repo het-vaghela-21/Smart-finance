@@ -19,12 +19,13 @@ export async function POST(req: Request) {
         }
 
         // Initialize the model
-        // We use gemini-1.5-flash as it is fast and ideal for text interaction
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        // We use gemini-2.5-flash as requested
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
         // Calculate some basic contextual data up front for the LLM
-        const totalDebit = transactions?.filter((t: any) => t.type === 'debit').reduce((sum: number, t: any) => sum + t.amount, 0) || 0;
-        const totalCredit = transactions?.filter((t: any) => t.type === 'credit').reduce((sum: number, t: any) => sum + t.amount, 0) || 0;
+        type TxContext = { type: string; amount: number };
+        const totalDebit = transactions?.filter((t: TxContext) => t.type === 'debit').reduce((sum: number, t: TxContext) => sum + t.amount, 0) || 0;
+        const totalCredit = transactions?.filter((t: TxContext) => t.type === 'credit').reduce((sum: number, t: TxContext) => sum + t.amount, 0) || 0;
         const netWorth = totalCredit - totalDebit;
 
         // Construct a highly strict system prompt
@@ -36,6 +37,7 @@ CRITICAL RULES:
 1. YOU MUST STRICTLY ONLY ANSWER QUESTIONS RELATED TO FINANCE, MARKETS, STOCKS, ECONOMICS, OR THE USER'S PERSONAL FINANCIAL PORTFOLIO.
 2. If the user asks about ANYTHING else (e.g., coding, sports, history, general chat, jokes, recipes), you must firmly reject the query and state that you are a specialized financial AI and cannot discuss topics outside of finance and wealth management.
 3. Be concise, professional, and analytical in your responses. Use formatting (bolding) to highlight key numbers or insights.
+4. IMPORTANT: Always finish your thoughts completely. Never truncate your sentences. Provide a full, proper, and continuous response.
 
 USER'S CURRENT FINANCIAL CONTEXT:
 Here is real-time data from the user's dashboard based on their historic transactions:
@@ -62,7 +64,6 @@ Only use the context above if the user specifically asks about their own spendin
                 }
             ],
             generationConfig: {
-                maxOutputTokens: 500,
                 temperature: 0.7,
             },
         });
@@ -73,10 +74,11 @@ Only use the context above if the user specifically asks about their own spendin
 
         return NextResponse.json({ reply: responseText });
 
-    } catch (error: any) {
-        console.error("Gemini API Error:", error);
+    } catch (error) {
+        const e = error as Error;
+        console.error("Gemini API Error:", e);
         return NextResponse.json(
-            { error: error?.message || "An error occurred during AI processing." },
+            { error: e?.message || "An error occurred during AI processing." },
             { status: 500 }
         );
     }

@@ -1,0 +1,77 @@
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import { NextResponse } from "next/server";
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "YOUR_API_KEY_HERE");
+
+export async function POST(req: Request) {
+    if (!process.env.GEMINI_API_KEY) {
+        return NextResponse.json(
+            { error: "GEMINI_API_KEY is not configured in the environment variables." },
+            { status: 500 }
+        );
+    }
+
+    try {
+        const { transactions } = await req.json();
+
+        if (!transactions || !Array.isArray(transactions)) {
+            return NextResponse.json({ error: "Invalid transactions array" }, { status: 400 });
+        }
+
+        const model = genAI.getGenerativeModel({
+            model: "gemini-2.5-flash",
+            generationConfig: {
+                responseMimeType: "application/json",
+            }
+        });
+
+        const systemPrompt = `
+You are a top-tier Financial Advisor AI. Analyze the following user transaction data and provide exactly 3 actionable, highly specific financial insights. Also provide a portfolio 'healthScore' from 0 to 100 based on their savings rate, spending patterns, and net flow.
+
+Transactions:
+${JSON.stringify(transactions, null, 2)}
+
+You must return your response STRICTLY as a raw JSON object (without markdown wrappers like \`\`\`json) matching this schema exactly:
+{
+  "healthScore": 85,
+  "insightText": "A 2-sentence summary of why the score is what it is.",
+  "insights": [
+    {
+      "id": 1,
+      "type": "warning" | "opportunity" | "tip",
+      "title": "Short title",
+      "desc": "Detailed 2-sentence description",
+      "color": "text-red-500" | "text-green-500" | "text-yellow-500",
+      "bg": "bg-red-500/10" | "bg-green-500/10" | "bg-yellow-500/10",
+      "border": "border-red-500/20" | "border-green-500/20" | "border-yellow-500/20"
+    }
+  ]
+}
+`;
+
+        const result = await model.generateContent(systemPrompt);
+        let rawText = result.response.text().trim();
+
+        // Safety Net: Even with JSON mime type, edge cases exist where formatting leaks
+        if (rawText.startsWith('```json')) {
+            rawText = rawText.substring(7);
+        } else if (rawText.startsWith('```')) {
+            rawText = rawText.substring(3);
+        }
+        if (rawText.endsWith('```')) {
+            rawText = rawText.substring(0, rawText.length - 3);
+        }
+
+        const parsed = JSON.parse(rawText.trim());
+
+        return NextResponse.json({ data: parsed });
+
+    } catch (error) {
+        const e = error as Error;
+        console.error("Gemini API Error (Insights):", e);
+        return NextResponse.json(
+            { error: e?.message || "An error occurred during AI processing." },
+            { status: 500 }
+        );
+    }
+}

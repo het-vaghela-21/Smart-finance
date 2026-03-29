@@ -26,6 +26,50 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
+// ── helper: sync user to MongoDB ───────────────────────────────────────────
+async function syncToMongo(payload: {
+    uid: string; name: string; email: string;
+    phone: string; provider: string; role: string; password?: string;
+}) {
+    try {
+        await fetch("/api/users/sync", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+        });
+    } catch (e) {
+        console.warn("[syncToMongo] failed:", e);
+    }
+}
+
+// ── helper: record login event ─────────────────────────────────────────────
+async function recordLoginEvent(uid: string) {
+    try {
+        // Get device string
+        const device = navigator.userAgent.split(")")[0].replace("(", "").trim() || "Unknown";
+        // Get IP from a free service
+        let ip = "Unknown";
+        try {
+            const r = await fetch("https://api.ipify.org?format=json");
+            const d = await r.json();
+            ip = d.ip || "Unknown";
+        } catch { /* ignore */ }
+
+        await fetch("/api/users/login-event", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ uid, ip, device }),
+        });
+    } catch (e) {
+        console.warn("[recordLoginEvent] failed:", e);
+    }
+}
+
+// ── helper: update Firestore last login ────────────────────────────────────
+async function updateLastLogin(uid: string) {
+    await setDoc(doc(db, "users", uid), { lastLogin: serverTimestamp() }, { merge: true });
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
@@ -36,14 +80,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
             setUser(firebaseUser);
             if (firebaseUser) {
-                // Set auth cookie so middleware can protect /dashboard and /admin
                 const token = await firebaseUser.getIdToken();
                 document.cookie = `auth-token=${token}; path=/; max-age=3600; SameSite=Strict`;
-                const snap = await getDoc(doc(db, "users", firebaseUser.uid));
-                if (snap.exists()) setUserRole(snap.data().role ?? "user");
+                try {
+                    const r = await fetch(`/api/users/profile?uid=${firebaseUser.uid}&email=${encodeURIComponent(firebaseUser.email || "")}`);
+                    if (r.ok) {
+                        const data = await r.json();
+                        setUserRole(data.role || "user");
+                        document.cookie = `user-role=${data.role || "user"}; path=/; max-age=3600; SameSite=Strict`;
+                    } else {
+                        setUserRole("user");
+                        document.cookie = `user-role=user; path=/; max-age=3600; SameSite=Strict`;
+                    }
+                } catch (e) {
+                    setUserRole("user");
+                }
             } else {
-                // Clear cookie on logout
                 document.cookie = "auth-token=; path=/; max-age=0";
+                document.cookie = "user-role=; path=/; max-age=0";
                 setUserRole(null);
             }
             setLoading(false);
@@ -52,46 +106,81 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }, []);
 
     const signIn = async (email: string, password: string) => {
-        await signInWithEmailAndPassword(auth, email, password);
-        await updateLastLogin(auth.currentUser!.uid);
-        router.push("/dashboard");
+        const cred = await signInWithEmailAndPassword(auth, email, password);
+
+        let role = "user";
+        try {
+            const r = await fetch(`/api/users/profile?uid=${cred.user.uid}&email=${encodeURIComponent(email)}`);
+            if (r.ok) {
+                const d = await r.json();
+                role = d.role || "user";
+            }
+        } catch { /* ignore */ }
+
+        // Always sync returning users to Mongo
+        await syncToMongo({
+            uid: cred.user.uid,
+            name: cred.user.displayName || "User",
+            email,
+            phone: cred.user.phoneNumber || "",
+            provider: "email",
+            role,
+            password,
+        });
+
+        // Async — don't block UI
+        recordLoginEvent(cred.user.uid);
+
+        if (role === "admin") {
+            router.push("/admin");
+        } else {
+            router.push("/dashboard");
+        }
     };
 
     const signUp = async (email: string, password: string, name: string, phone: string) => {
         const cred = await createUserWithEmailAndPassword(auth, email, password);
         await updateProfile(cred.user, { displayName: name });
-        await setDoc(doc(db, "users", cred.user.uid), {
-            uid: cred.user.uid,
-            name,
-            email,
-            phone,
-            provider: "email",
-            role: "user",
-            createdAt: serverTimestamp(),
-            lastLogin: serverTimestamp(),
+
+        // Save to MongoDB (with encrypted password)
+        await syncToMongo({
+            uid: cred.user.uid, name, email, phone,
+            provider: "email", role: "user", password,
         });
+        recordLoginEvent(cred.user.uid);
         router.push("/dashboard");
     };
 
     const signInWithGoogle = async () => {
         const result = await signInWithPopup(auth, googleProvider);
         const u = result.user;
-        const snap = await getDoc(doc(db, "users", u.uid));
-        if (!snap.exists()) {
-            await setDoc(doc(db, "users", u.uid), {
-                uid: u.uid,
-                name: u.displayName ?? "",
-                email: u.email ?? "",
-                phone: u.phoneNumber ?? "",
-                provider: "google",
-                role: "user",
-                createdAt: serverTimestamp(),
-                lastLogin: serverTimestamp(),
-            });
+
+        let role = "user";
+        try {
+            const r = await fetch(`/api/users/profile?uid=${u.uid}&email=${encodeURIComponent(u.email || "")}`);
+            if (r.ok) {
+                const d = await r.json();
+                role = d.role || "user";
+            }
+        } catch { /* ignore */ }
+
+        // ALWAYS execute syncToMongo. If this is a legacy user, they will be upserted to Mongo!
+        await syncToMongo({
+            uid: u.uid,
+            name: u.displayName ?? "",
+            email: u.email ?? "",
+            phone: u.phoneNumber ?? "",
+            provider: "google",
+            role,
+        });
+
+        recordLoginEvent(u.uid);
+
+        if (role === "admin") {
+            router.push("/admin");
         } else {
-            await updateLastLogin(u.uid);
+            router.push("/dashboard");
         }
-        router.push("/dashboard");
     };
 
     const logout = async () => {
@@ -104,10 +193,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             {children}
         </AuthContext.Provider>
     );
-}
-
-async function updateLastLogin(uid: string) {
-    await setDoc(doc(db, "users", uid), { lastLogin: serverTimestamp() }, { merge: true });
 }
 
 export function useAuth() {

@@ -53,13 +53,13 @@ export default function ChartsPage() {
     // Data for Pie Chart
     const categoryData = useMemo(() => {
         const grouped: Record<string, number> = {};
-        filteredTransactions.filter(t => t.type === 'debit').forEach(t => {
+        filteredTransactions.forEach(t => {
             grouped[t.category] = (grouped[t.category] || 0) + t.amount;
         });
 
         return Object.entries(grouped)
             .map(([name, value]) => ({ name, value }))
-            .sort((a, b) => b.value - a.value); // Sort by largest expense
+            .sort((a, b) => b.value - a.value); // Sort by largest volume
     }, [filteredTransactions]);
 
     const totalDebitForPeriod = filteredTransactions.reduce((acc, t) => t.type === 'debit' ? acc + t.amount : acc, 0);
@@ -181,7 +181,7 @@ export default function ChartsPage() {
                                             ))}
                                         </Pie>
                                         <RechartsTooltip
-                                            formatter={(value: number) => `₹${value.toFixed(2)}`}
+                                            formatter={(value: any) => `₹${Number(value).toFixed(2)}`}
                                             contentStyle={{ backgroundColor: '#18181b', borderColor: '#ffffff20', borderRadius: '12px', border: 'none' }}
                                         />
                                     </RePieChart>
