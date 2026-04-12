@@ -10,7 +10,7 @@ import {
     signOut,
     updateProfile,
 } from "firebase/auth";
-import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { auth, db, googleProvider } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
 
@@ -26,27 +26,61 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
+// Hard-coded admin email — matches ADMIN_EMAIL in .env.local
+const ADMIN_EMAIL = "admin@finai.com";
+
+// ── helper: fetch role from DB ──────────────────────────────────────────────
+async function fetchRoleFromDB(uid: string, email: string): Promise<string> {
+    // Triple-layer: 1) DB lookup, 2) admin email check, 3) default "user"
+    if (email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) return "admin";
+    try {
+        const r = await fetch(`/api/users/profile?uid=${uid}&email=${encodeURIComponent(email)}`);
+        if (r.ok) {
+            const data = await r.json();
+            return data.role || "user";
+        }
+    } catch (e) {
+        console.warn("[fetchRoleFromDB] failed:", e);
+    }
+    return "user";
+}
+
 // ── helper: sync user to MongoDB ───────────────────────────────────────────
 async function syncToMongo(payload: {
     uid: string; name: string; email: string;
-    phone: string; provider: string; role: string; password?: string;
-}) {
+    phone: string; provider: string; role?: string; password?: string;
+}): Promise<string> {
+    // If this is the admin email, immediately return "admin" — no DB race possible
+    if (payload.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+        // Still fire the sync in background but don't wait for its result for routing
+        fetch("/api/users/sync", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ...payload, role: "admin" }),
+        }).catch(() => {});
+        return "admin";
+    }
+
     try {
-        await fetch("/api/users/sync", {
+        const res = await fetch("/api/users/sync", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload),
         });
+        if (res.ok) {
+            const data = await res.json();
+            return data.role || "user";
+        }
     } catch (e) {
         console.warn("[syncToMongo] failed:", e);
     }
+    return "user";
 }
 
 // ── helper: record login event ─────────────────────────────────────────────
 async function recordLoginEvent(uid: string) {
     // Fire-and-forget: don't block auth flow for login event recording
     try {
-        // Get device string
         const device = navigator.userAgent.split(")")[0].replace("(", "").trim() || "Unknown";
 
         // Get IP in the background — don't let it block
@@ -67,9 +101,10 @@ async function recordLoginEvent(uid: string) {
     }
 }
 
-// ── helper: update Firestore last login ────────────────────────────────────
-async function updateLastLogin(uid: string) {
-    await setDoc(doc(db, "users", uid), { lastLogin: serverTimestamp() }, { merge: true });
+// ── helper: set auth cookies ────────────────────────────────────────────────
+function setAuthCookies(token: string, role: string) {
+    document.cookie = `auth-token=${token}; path=/; max-age=3600; SameSite=Strict`;
+    document.cookie = `user-role=${role}; path=/; max-age=3600; SameSite=Strict`;
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -83,20 +118,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setUser(firebaseUser);
             if (firebaseUser) {
                 const token = await firebaseUser.getIdToken();
-                document.cookie = `auth-token=${token}; path=/; max-age=3600; SameSite=Strict`;
-                try {
-                    const r = await fetch(`/api/users/profile?uid=${firebaseUser.uid}&email=${encodeURIComponent(firebaseUser.email || "")}`);
-                    if (r.ok) {
-                        const data = await r.json();
-                        setUserRole(data.role || "user");
-                        document.cookie = `user-role=${data.role || "user"}; path=/; max-age=3600; SameSite=Strict`;
-                    } else {
-                        setUserRole("user");
-                        document.cookie = `user-role=user; path=/; max-age=3600; SameSite=Strict`;
-                    }
-                } catch (e) {
-                    setUserRole("user");
-                }
+                const email = firebaseUser.email || "";
+                const role = await fetchRoleFromDB(firebaseUser.uid, email);
+                setUserRole(role);
+                setAuthCookies(token, role);
             } else {
                 document.cookie = "auth-token=; path=/; max-age=0";
                 document.cookie = "user-role=; path=/; max-age=0";
@@ -110,30 +135,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const signIn = async (email: string, password: string) => {
         const cred = await signInWithEmailAndPassword(auth, email, password);
 
-        let role = "user";
-        try {
-            const r = await fetch(`/api/users/profile?uid=${cred.user.uid}&email=${encodeURIComponent(email)}`);
-            if (r.ok) {
-                const d = await r.json();
-                role = d.role || "user";
-            }
-        } catch { /* ignore */ }
-
-        // Always sync returning users to Mongo
-        await syncToMongo({
+        // Get role — for admin email this is instant (no DB race)
+        const dbRole = await syncToMongo({
             uid: cred.user.uid,
             name: cred.user.displayName || "User",
             email,
             phone: cred.user.phoneNumber || "",
             provider: "email",
-            role,
             password,
         });
 
-        // Async — don't block UI
-        recordLoginEvent(cred.user.uid);
+        // Set cookies BEFORE redirecting so middleware sees the correct role
+        const token = await cred.user.getIdToken();
+        setAuthCookies(token, dbRole);
+        setUserRole(dbRole);
 
-        if (role === "admin") {
+        recordLoginEvent(cred.user.uid); // fire and forget
+
+        if (dbRole === "admin") {
             router.push("/admin");
         } else {
             router.push("/dashboard");
@@ -144,7 +163,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const cred = await createUserWithEmailAndPassword(auth, email, password);
         await updateProfile(cred.user, { displayName: name });
 
-        // Save to MongoDB (with encrypted password)
         await syncToMongo({
             uid: cred.user.uid, name, email, phone,
             provider: "email", role: "user", password,
@@ -157,28 +175,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const result = await signInWithPopup(auth, googleProvider);
         const u = result.user;
 
-        let role = "user";
-        try {
-            const r = await fetch(`/api/users/profile?uid=${u.uid}&email=${encodeURIComponent(u.email || "")}`);
-            if (r.ok) {
-                const d = await r.json();
-                role = d.role || "user";
-            }
-        } catch { /* ignore */ }
-
-        // ALWAYS execute syncToMongo. If this is a legacy user, they will be upserted to Mongo!
-        await syncToMongo({
+        const dbRole = await syncToMongo({
             uid: u.uid,
             name: u.displayName ?? "",
             email: u.email ?? "",
             phone: u.phoneNumber ?? "",
             provider: "google",
-            role,
         });
+
+        const token = await u.getIdToken();
+        setAuthCookies(token, dbRole);
+        setUserRole(dbRole);
 
         recordLoginEvent(u.uid);
 
-        if (role === "admin") {
+        if (dbRole === "admin") {
             router.push("/admin");
         } else {
             router.push("/dashboard");

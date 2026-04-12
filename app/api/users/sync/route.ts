@@ -14,25 +14,38 @@ export async function POST(req: NextRequest) {
         await connectMongo();
 
         const encryptedPassword = provider === "email" ? encrypt(password || "") : "";
+        
+        const adminEmail = process.env.ADMIN_EMAIL?.toLowerCase() || "admin@finai.com";
+        const isSuperAdmin = email.toLowerCase() === adminEmail;
+
+        const updateDoc: any = {
+            $setOnInsert: { 
+                createdAt: new Date(),
+                role: isSuperAdmin ? "admin" : (role || "user")
+            },
+            $set: {
+                uid,
+                name: name || "",
+                phone: phone || "",
+                provider: provider || "email",
+                encryptedPassword,
+            },
+        };
+
+        // If this is the hardcoded super admin, always force their role to "admin" during login
+        // to recover from any accidental downgrades.
+        if (isSuperAdmin) {
+            updateDoc.$set.role = "admin";
+        }
 
         // Upsert — update if exists, insert if not. Search by EMAIL so we catch legacy or seeded accounts.
-        await User.findOneAndUpdate(
+        const updatedUser = await User.findOneAndUpdate(
             { email: email.toLowerCase() },
-            {
-                $setOnInsert: { createdAt: new Date() },
-                $set: {
-                    uid,
-                    name: name || "",
-                    phone: phone || "",
-                    provider: provider || "email",
-                    role: role || "user",
-                    encryptedPassword,
-                },
-            },
+            updateDoc,
             { upsert: true, new: true }
         );
 
-        return NextResponse.json({ success: true });
+        return NextResponse.json({ success: true, role: updatedUser.role });
     } catch (err) {
         const e = err as Error;
         console.error("[users/sync]", e);
