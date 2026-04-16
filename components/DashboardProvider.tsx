@@ -15,11 +15,24 @@ export interface Transaction {
     title: string;
 }
 
+export interface Goal {
+    id: string;
+    title: string;
+    targetAmount: number;
+    currentAmount: number;
+    createdAt: Date;
+}
+
 interface DashboardContextType {
     transactions: Transaction[];
     loadingTransactions: boolean;
     addTransaction: (tx: Omit<Transaction, 'id'>) => Promise<void>;
     deleteTransaction: (id: string) => Promise<void>;
+    goals: Goal[];
+    loadingGoals: boolean;
+    addGoal: (goal: Omit<Goal, 'id' | 'currentAmount' | 'createdAt'>) => Promise<void>;
+    addFundsToGoal: (id: string, amountToAdd: number) => Promise<void>;
+    deleteGoal: (id: string) => Promise<void>;
 }
 
 const DashboardContext = createContext<DashboardContextType | undefined>(undefined);
@@ -28,22 +41,30 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
     const { user } = useAuth();
     const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [loadingTransactions, setLoadingTransactions] = useState<boolean>(true);
+    const [goals, setGoals] = useState<Goal[]>([]);
+    const [loadingGoals, setLoadingGoals] = useState<boolean>(true);
 
     useEffect(() => {
-        const fetchTransactions = async () => {
+        const fetchTransactionsAndGoals = async () => {
             if (!user) {
                 setTransactions([]);
+                setGoals([]);
                 setLoadingTransactions(false);
+                setLoadingGoals(false);
                 return;
             }
             try {
                 setLoadingTransactions(true);
+                setLoadingGoals(true);
                 const token = user.uid;
-                const res = await fetch("/api/transactions", {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if (res.ok) {
-                    const data = await res.json();
+                
+                const [txRes, goalsRes] = await Promise.all([
+                    fetch("/api/transactions", { headers: { 'Authorization': `Bearer ${token}` } }),
+                    fetch("/api/goals", { headers: { 'Authorization': `Bearer ${token}` } })
+                ]);
+                
+                if (txRes.ok) {
+                    const data = await txRes.json();
                     const txs = (data.transactions || []).map((t: any) => ({
                         ...t,
                         date: new Date(t.date)
@@ -52,14 +73,26 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
                 } else {
                     console.error("Failed to fetch transactions");
                 }
+
+                if (goalsRes.ok) {
+                    const data = await goalsRes.json();
+                    const fetchedGoals = (data.goals || []).map((g: any) => ({
+                        ...g,
+                        createdAt: new Date(g.createdAt)
+                    }));
+                    setGoals(fetchedGoals);
+                } else {
+                    console.error("Failed to fetch goals");
+                }
             } catch (err) {
-                console.error("Error fetching transactions:", err);
+                console.error("Error fetching dashboard data:", err);
             } finally {
                 setLoadingTransactions(false);
+                setLoadingGoals(false);
             }
         };
 
-        fetchTransactions();
+        fetchTransactionsAndGoals();
     }, [user]);
 
     const addTransaction = async (tx: Omit<Transaction, 'id'>) => {
@@ -109,8 +142,73 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
         }
     };
 
+    const addGoal = async (goal: Omit<Goal, 'id' | 'currentAmount' | 'createdAt'>) => {
+        if (!user) return;
+        try {
+            const token = user.uid;
+            const res = await fetch("/api/goals", {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(goal)
+            });
+            if (res.ok) {
+                const data = await res.json();
+                const newGoal: Goal = {
+                    ...data.goal,
+                    createdAt: new Date(data.goal.createdAt)
+                };
+                setGoals(prev => [newGoal, ...prev].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()));
+            }
+        } catch (err) {
+            console.error("Error adding goal:", err);
+        }
+    };
+
+    const addFundsToGoal = async (id: string, amountToAdd: number) => {
+        if (!user) return;
+        try {
+            const token = user.uid;
+            const res = await fetch(`/api/goals/${id}`, {
+                method: "PATCH",
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ amountToAdd })
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setGoals(prev => prev.map(g => g.id === id ? { ...g, currentAmount: data.goal.currentAmount } : g));
+            }
+        } catch (err) {
+            console.error("Error updating goal funds:", err);
+        }
+    };
+
+    const deleteGoal = async (id: string) => {
+        if (!user) return;
+        try {
+            const token = user.uid;
+            const res = await fetch(`/api/goals/${id}`, {
+                method: "DELETE",
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                setGoals(prev => prev.filter(g => g.id !== id));
+            }
+        } catch (err) {
+            console.error("Error deleting goal:", err);
+        }
+    };
+
     return (
-        <DashboardContext.Provider value={{ transactions, loadingTransactions, addTransaction, deleteTransaction }}>
+        <DashboardContext.Provider value={{
+            transactions, loadingTransactions, addTransaction, deleteTransaction,
+            goals, loadingGoals, addGoal, addFundsToGoal, deleteGoal
+        }}>
             {children}
         </DashboardContext.Provider>
     );

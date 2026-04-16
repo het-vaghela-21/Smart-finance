@@ -13,7 +13,8 @@ import {
     ChevronLeft,
     ChevronRight,
     Zap,
-    Shield
+    Shield,
+    Target
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
@@ -22,6 +23,7 @@ const sidebarNavItems = [
     { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { title: "Charts", href: "/dashboard/charts", icon: BarChart3 },
     { title: "Transactions", href: "/dashboard/transactions", icon: ReceiptText },
+    { title: "Financial Goals", href: "/dashboard/goals", icon: Target },
     { title: "AI Suggestions", href: "/dashboard/ai-suggestions", icon: Bot },
     { title: "Newsletter", href: "/dashboard/newsletter", icon: Newspaper },
 ];
