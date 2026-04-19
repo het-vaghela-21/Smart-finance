@@ -70,51 +70,95 @@ export function FinanceNews() {
     const [activeCategory, setActiveCategory] = useState(0);
     const [searchQuery, setSearchQuery] = useState("");
     const [isSearching, setIsSearching] = useState(false);
+    const [toast, setToast] = useState<string | null>(null);
 
-    const fetchNews = useCallback(async (query: string) => {
+    const fetchNews = useCallback(async (query: string, forceRefresh = false) => {
         setLoading(true);
         try {
-            const res = await fetch(`/api/news?q=${encodeURIComponent(query)}&count=10`);
+            const CACHE_KEY = `finai_news_page_${query}`;
+            if (!forceRefresh) {
+                const cached = sessionStorage.getItem(CACHE_KEY);
+                if (cached) {
+                    try {
+                        const { data, timestamp } = JSON.parse(cached);
+                        if (Date.now() - timestamp < 3600000) {
+                            setArticles(data);
+                            setLoading(false);
+                            return;
+                        }
+                    } catch {}
+                }
+            }
+
+            const apiUrl = forceRefresh 
+                ? `/api/news?q=${encodeURIComponent(query)}&count=10&forceRefresh=true&t=${Date.now()}`
+                : `/api/news?q=${encodeURIComponent(query)}&count=10`;
+                
+            const res = await fetch(apiUrl);
             if (!res.ok) {
                 console.error("News fetch failed:", res.status);
                 setArticles([]);
+                setLoading(false);
                 return;
             }
             const data = await res.json();
             const fetchedArticles = data.articles || [];
+            
+            // Show toast to explain why it didn't change visually
+            if (data.cooldown) {
+                setToast("Rate limit protection: You're already viewing the latest news.");
+            } else if (forceRefresh) {
+                const isIdentical = JSON.stringify(fetchedArticles) === JSON.stringify(articles);
+                if (isIdentical && fetchedArticles.length > 0) {
+                    setToast("Refreshed! The headlines haven't changed yet.");
+                } else {
+                    setToast("News updated successfully!");
+                }
+            }
+            if (forceRefresh || data.cooldown) {
+                setTimeout(() => setToast(null), 4000);
+            }
+
             setArticles(fetchedArticles);
+            sessionStorage.setItem(CACHE_KEY, JSON.stringify({ data: fetchedArticles, timestamp: Date.now() }));
+            
+            // Ensure minimum visual loading time on refresh so the user knows it actually worked
+            if (forceRefresh) {
+                setTimeout(() => setLoading(false), 400);
+            } else {
+                setLoading(false);
+            }
         } catch (err) {
             console.error("News fetch error:", err);
             setArticles([]);
-        } finally {
             setLoading(false);
         }
     }, []);
 
     // Fetch on initial load only
     useEffect(() => {
-        fetchNews(CATEGORIES[0].query);
+        fetchNews(CATEGORIES[0].query, false);
     }, [fetchNews]);
 
     const handleCategoryClick = (index: number) => {
         setActiveCategory(index);
         setIsSearching(false);
         setSearchQuery("");
-        fetchNews(CATEGORIES[index].query);
+        fetchNews(CATEGORIES[index].query, false);
     };
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
         if (searchQuery.trim()) {
             setIsSearching(true);
-            fetchNews(searchQuery.trim());
+            fetchNews(searchQuery.trim(), false);
         }
     };
 
     const clearSearch = () => {
         setSearchQuery("");
         setIsSearching(false);
-        fetchNews(CATEGORIES[activeCategory].query);
+        fetchNews(CATEGORIES[activeCategory].query, false);
     };
 
     return (
@@ -135,8 +179,8 @@ export function FinanceNews() {
                 <button
                     onClick={() =>
                         isSearching
-                            ? fetchNews(searchQuery)
-                            : fetchNews(CATEGORIES[activeCategory].query)
+                            ? fetchNews(searchQuery, true)
+                            : fetchNews(CATEGORIES[activeCategory].query, true)
                     }
                     disabled={loading}
                     className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-zinc-400 hover:text-white bg-white/5 hover:bg-white/10 border border-white/5 transition-all disabled:opacity-40"
@@ -317,6 +361,21 @@ export function FinanceNews() {
                     )}
                 </AnimatePresence>
             </div>
+
+            {/* UX Feedback Toast */}
+            <AnimatePresence>
+                {toast && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 50 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 50 }}
+                        className="fixed bottom-6 right-6 z-50 px-5 py-3.5 rounded-xl bg-zinc-900 border border-white/10 shadow-[0_10px_40px_rgba(0,0,0,0.5)] text-sm font-medium text-white flex items-center gap-3"
+                    >
+                        <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                        {toast}
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

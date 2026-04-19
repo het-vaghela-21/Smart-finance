@@ -57,7 +57,6 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
                 setLoadingTransactions(true);
                 setLoadingGoals(true);
                 const token = user.uid;
-                
                 const [txRes, goalsRes] = await Promise.all([
                     fetch("/api/transactions", { headers: { 'Authorization': `Bearer ${token}` } }),
                     fetch("/api/goals", { headers: { 'Authorization': `Bearer ${token}` } })
@@ -65,7 +64,7 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
                 
                 if (txRes.ok) {
                     const data = await txRes.json();
-                    const txs = (data.transactions || []).map((t: any) => ({
+                    const txs = (data.transactions || []).map((t: { date: string | number | Date }) => ({
                         ...t,
                         date: new Date(t.date)
                     }));

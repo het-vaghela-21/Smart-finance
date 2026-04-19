@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import Link from "next/link";
-import { Eye, EyeOff, Mail, Lock, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, Loader2, Zap } from "lucide-react";
 
 export default function LoginPage() {
     const { signIn, signInWithGoogle } = useAuth();
@@ -20,8 +20,9 @@ export default function LoginPage() {
         setLoading(true);
         try {
             await signIn(email, password);
-        } catch (err: any) {
-            setError(friendlyError(err.code));
+        } catch (error: unknown) {
+            const err = error as Error & { code?: string };
+            setError(friendlyError(err.code || ""));
         } finally {
             setLoading(false);
         }
@@ -32,8 +33,9 @@ export default function LoginPage() {
         setGoogleLoading(true);
         try {
             await signInWithGoogle();
-        } catch (err: any) {
-            setError(friendlyError(err.code));
+        } catch (error: unknown) {
+            const err = error as Error & { code?: string };
+            setError(friendlyError(err.code || ""));
         } finally {
             setGoogleLoading(false);
         }
@@ -42,15 +44,28 @@ export default function LoginPage() {
     return (
         <div className="flex items-center justify-center min-h-screen px-4">
             <div className="w-full max-w-md">
-                {/* Card */}
-                <div className="bg-black/60 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-[0_0_60px_rgba(249,115,22,0.08)]">
+                <div
+                    className="rounded-3xl p-8"
+                    style={{
+                        background: "rgba(13,13,26,0.75)",
+                        backdropFilter: "blur(24px)",
+                        border: "1px solid rgba(124,58,237,0.20)",
+                        boxShadow: "0 0 60px rgba(124,58,237,0.10), 0 0 120px rgba(34,211,238,0.04)",
+                    }}
+                >
+                    {/* Header */}
                     <div className="mb-8 text-center">
+                        <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4"
+                            style={{ background: "linear-gradient(135deg, #7C3AED, #22D3EE)", boxShadow: "0 0 24px rgba(124,58,237,0.35)" }}>
+                            <Zap className="w-7 h-7 text-white" />
+                        </div>
                         <h1 className="text-3xl font-bold text-white tracking-tight mb-2">Welcome back</h1>
                         <p className="text-zinc-400 text-sm">Sign in to your FinAI account</p>
                     </div>
 
                     {error && (
-                        <div className="mb-6 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm text-center">
+                        <div className="mb-6 px-4 py-3 rounded-xl text-red-400 text-sm text-center"
+                            style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)" }}>
                             {error}
                         </div>
                     )}
@@ -59,7 +74,10 @@ export default function LoginPage() {
                     <button
                         onClick={handleGoogle}
                         disabled={googleLoading}
-                        className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white text-sm font-medium transition-all mb-6 disabled:opacity-60"
+                        className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl text-white text-sm font-medium transition-all mb-6 disabled:opacity-60"
+                        style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.10)" }}
+                        onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.09)")}
+                        onMouseLeave={e => (e.currentTarget.style.background = "rgba(255,255,255,0.05)")}
                     >
                         {googleLoading ? (
                             <Loader2 className="w-4 h-4 animate-spin" />
@@ -75,9 +93,9 @@ export default function LoginPage() {
                     </button>
 
                     <div className="flex items-center gap-3 mb-6">
-                        <div className="flex-1 h-px bg-white/10" />
+                        <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.08)" }} />
                         <span className="text-zinc-600 text-xs font-medium">OR</span>
-                        <div className="flex-1 h-px bg-white/10" />
+                        <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.08)" }} />
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-4">
@@ -89,7 +107,13 @@ export default function LoginPage() {
                                 onChange={(e) => setEmail(e.target.value)}
                                 placeholder="Email address"
                                 required
-                                className="w-full bg-white/5 border border-white/10 rounded-xl pl-11 pr-4 py-3 text-white placeholder:text-zinc-600 text-sm outline-none focus:border-orange-500/50 focus:bg-white/8 transition-all"
+                                className="w-full rounded-xl pl-11 pr-4 py-3 text-white placeholder:text-zinc-600 text-sm outline-none transition-all"
+                                style={{
+                                    background: "rgba(255,255,255,0.04)",
+                                    border: "1px solid rgba(255,255,255,0.09)",
+                                }}
+                                onFocus={e => { e.currentTarget.style.border = "1px solid rgba(124,58,237,0.55)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(124,58,237,0.10)"; }}
+                                onBlur={e => { e.currentTarget.style.border = "1px solid rgba(255,255,255,0.09)"; e.currentTarget.style.boxShadow = "none"; }}
                             />
                         </div>
 
@@ -101,15 +125,22 @@ export default function LoginPage() {
                                 onChange={(e) => setPassword(e.target.value)}
                                 placeholder="Password"
                                 required
-                                className="w-full bg-white/5 border border-white/10 rounded-xl pl-11 pr-11 py-3 text-white placeholder:text-zinc-600 text-sm outline-none focus:border-orange-500/50 focus:bg-white/8 transition-all"
+                                className="w-full rounded-xl pl-11 pr-11 py-3 text-white placeholder:text-zinc-600 text-sm outline-none transition-all"
+                                style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.09)" }}
+                                onFocus={e => { e.currentTarget.style.border = "1px solid rgba(124,58,237,0.55)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(124,58,237,0.10)"; }}
+                                onBlur={e => { e.currentTarget.style.border = "1px solid rgba(255,255,255,0.09)"; e.currentTarget.style.boxShadow = "none"; }}
                             />
-                            <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors">
+                            <button type="button" onClick={() => setShowPass(!showPass)}
+                                className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors">
                                 {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                             </button>
                         </div>
 
                         <div className="text-right">
-                            <Link href="/auth/forgot-password" className="text-xs text-zinc-500 hover:text-orange-400 transition-colors">
+                            <Link href="/auth/forgot-password" className="text-xs transition-colors"
+                                style={{ color: "#9F67FF" }}
+                                onMouseEnter={e => (e.currentTarget.style.color = "#22D3EE")}
+                                onMouseLeave={e => (e.currentTarget.style.color = "#9F67FF")}>
                                 Forgot password?
                             </Link>
                         </div>
@@ -117,7 +148,11 @@ export default function LoginPage() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full py-3 rounded-xl bg-orange-500 hover:bg-orange-400 text-white font-semibold text-sm transition-all shadow-[0_0_20px_rgba(249,115,22,0.3)] hover:shadow-[0_0_30px_rgba(249,115,22,0.5)] flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                            className="w-full py-3 rounded-xl text-white font-semibold text-sm transition-all flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed hover:scale-[1.02]"
+                            style={{
+                                background: "linear-gradient(135deg, #7C3AED 0%, #22D3EE 100%)",
+                                boxShadow: "0 0 24px rgba(124,58,237,0.40)",
+                            }}
                         >
                             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
                             Sign In
@@ -126,7 +161,11 @@ export default function LoginPage() {
 
                     <p className="text-center text-zinc-500 text-sm mt-6">
                         Don&apos;t have an account?{" "}
-                        <Link href="/auth/register" className="text-orange-400 hover:text-orange-300 font-medium transition-colors">
+                        <Link href="/auth/register"
+                            className="font-medium transition-colors"
+                            style={{ color: "#9F67FF" }}
+                            onMouseEnter={e => (e.currentTarget.style.color = "#22D3EE")}
+                            onMouseLeave={e => (e.currentTarget.style.color = "#9F67FF")}>
                             Create one
                         </Link>
                     </p>

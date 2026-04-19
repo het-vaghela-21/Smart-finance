@@ -18,6 +18,7 @@ export async function POST(req: NextRequest) {
         const adminEmail = process.env.ADMIN_EMAIL?.toLowerCase() || "admin@finai.com";
         const isSuperAdmin = email.toLowerCase() === adminEmail;
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const updateDoc: any = {
             $setOnInsert: { 
                 createdAt: new Date(),

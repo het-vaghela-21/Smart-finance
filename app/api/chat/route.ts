@@ -1,7 +1,16 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 import { NextResponse } from "next/server";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "YOUR_API_KEY_HERE");
+// v1beta endpoint supports gemini-1.5-flash which has a separate quota pool
+const genAI = new GoogleGenAI({
+    apiKey: process.env.GEMINI_API_KEY || "",
+});
+
+const MODEL_FALLBACK_CHAIN = [
+    "gemini-2.0-flash",
+    "gemini-2.0-flash-lite",
+    "gemini-2.5-flash",
+];
 
 export async function POST(req: Request) {
     if (!process.env.GEMINI_API_KEY) {
@@ -18,29 +27,21 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Message is required" }, { status: 400 });
         }
 
-        // Initialize the model
-        // We use gemini-2.5-flash as requested
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-
-        // Calculate some basic contextual data up front for the LLM
         type TxContext = { type: string; amount: number };
         const totalDebit = transactions?.filter((t: TxContext) => t.type === 'debit').reduce((sum: number, t: TxContext) => sum + t.amount, 0) || 0;
         const totalCredit = transactions?.filter((t: TxContext) => t.type === 'credit').reduce((sum: number, t: TxContext) => sum + t.amount, 0) || 0;
         const netWorth = totalCredit - totalDebit;
 
-        // Construct a highly strict system prompt
-        const systemPrompt = `
-You are FinAI, a highly advanced, professional, and strictly bounded Financial Advisor AI. 
+        const systemInstruction = `You are FinAI, a highly advanced, professional, and strictly bounded Financial Advisor AI.
 You act as an intelligence layer on top of a user's personal dashboard.
 
 CRITICAL RULES:
-1. YOU MUST STRICTLY ONLY ANSWER QUESTIONS RELATED TO FINANCE, MARKETS, STOCKS, ECONOMICS, OR THE USER'S PERSONAL FINANCIAL PORTFOLIO.
-2. If the user asks about ANYTHING else (e.g., coding, sports, history, general chat, jokes, recipes), you must firmly reject the query and state that you are a specialized financial AI and cannot discuss topics outside of finance and wealth management.
-3. Be concise, professional, and analytical in your responses. Use formatting (bolding) to highlight key numbers or insights.
-4. IMPORTANT: Always finish your thoughts completely. Never truncate your sentences. Provide a full, proper, and continuous response.
+1. ONLY answer questions related to finance, markets, stocks, economics, or the user's personal financial portfolio.
+2. If the user asks about anything else, firmly reject the query and explain you are a specialized financial AI.
+3. Be concise, professional, and analytical. Use bold formatting to highlight key numbers or insights.
+4. Always complete your responses fully. Never truncate sentences.
 
 USER'S CURRENT FINANCIAL CONTEXT:
-Here is real-time data from the user's dashboard based on their historic transactions:
 - Total Cash Received (Credit): ₹${totalCredit.toFixed(2)}
 - Total Cash Spent (Debit): ₹${totalDebit.toFixed(2)}
 - Current Net Balance: ₹${netWorth.toFixed(2)}
@@ -48,35 +49,57 @@ Here is real-time data from the user's dashboard based on their historic transac
 Raw Transaction Data:
 ${JSON.stringify(transactions, null, 2)}
 
-Only use the context above if the user specifically asks about their own spending, averages, or portfolio. Otherwise, rely on your broad internet knowledge of global finance.
-        `;
+Only reference the above data if the user asks about their own portfolio/spending.`;
 
-        // Start a chat session with the system instructions injected via history
-        const chat = model.startChat({
-            history: [
-                {
-                    role: "user",
-                    parts: [{ text: "SYSTEM PROMPT INSTRUCTION (Do not reply to this msg, just acknowledge): " + systemPrompt }]
-                },
-                {
-                    role: "model",
-                    parts: [{ text: "I acknowledge the instructions. I am FinAI, a strict financial advisor. I will only answer finance-related queries and I have loaded the user's portfolio data into my context." }]
-                }
-            ],
-            generationConfig: {
-                temperature: 0.7,
-            },
-        });
+        let lastError: Error | null = null;
 
-        // Send the user's actual message
-        const result = await chat.sendMessage(message);
-        const responseText = result.response.text();
+        for (const modelName of MODEL_FALLBACK_CHAIN) {
+            try {
+                console.log(`[Chat] Trying model: ${modelName}`);
+                const response = await genAI.models.generateContent({
+                    model: modelName,
+                    contents: message,
+                    config: {
+                        systemInstruction,
+                        temperature: 0.7,
+                    },
+                });
+                console.log(`[Chat] ✅ Success with model: ${modelName}`);
+                return NextResponse.json({ reply: response.text ?? "I could not generate a response." });
+            } catch (err) {
+                const e = err as Error;
+                console.warn(`[Chat] Model ${modelName} failed: ${e.message.substring(0, 200)}`);
+                lastError = e;
+                const isRetryable = e.message.includes("429") ||
+                    e.message.includes("503") ||
+                    e.message.includes("RESOURCE_EXHAUSTED") ||
+                    e.message.includes("Too Many Requests");
+                if (!isRetryable) break;
+                await new Promise((r) => setTimeout(r, 300));
+            }
+        }
 
-        return NextResponse.json({ reply: responseText });
+        // All models failed — return friendly message in chat format
+        const e = lastError as Error;
+        if (e.message.includes("RESOURCE_EXHAUSTED") || e.message.includes("quota") || e.message.includes("429")) {
+            const retryMatch = e.message.match(/retry[^0-9]*(\d+(\.\d+)?)\s*s/i);
+            const waitSecs = retryMatch ? Math.ceil(parseFloat(retryMatch[1])) : null;
+            const waitMsg = waitSecs
+                ? `Please wait **${waitSecs} seconds** and try again.`
+                : "Your daily free-tier quota may be exhausted. The quota resets at **midnight Pacific Time (≈1:30 PM IST)**. Please try again later.";
+            return NextResponse.json({
+                reply: `⚠️ All AI models are currently rate-limited. ${waitMsg}`
+            });
+        }
+
+        return NextResponse.json(
+            { error: e?.message?.substring(0, 300) || "An error occurred during AI processing." },
+            { status: 500 }
+        );
 
     } catch (error) {
         const e = error as Error;
-        console.error("Gemini API Error:", e);
+        console.error("[Chat] Unexpected error:", e);
         return NextResponse.json(
             { error: e?.message || "An error occurred during AI processing." },
             { status: 500 }

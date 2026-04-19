@@ -30,27 +30,53 @@ export const FinanceNewsWidget = memo(function FinanceNewsWidget() {
     const [articles, setArticles] = useState<Article[]>([]);
     const [loading, setLoading] = useState(true);
 
-    const fetchNews = useCallback(async () => {
+    const fetchNews = useCallback(async (forceRefresh = false) => {
         setLoading(true);
         try {
-            const res = await fetch("/api/news?count=4");
+            const CACHE_KEY = "finai_news_widget_cache";
+            if (!forceRefresh) {
+                const cached = sessionStorage.getItem(CACHE_KEY);
+                if (cached) {
+                    try {
+                        const { data, timestamp } = JSON.parse(cached);
+                        if (Date.now() - timestamp < 3600000) { // 1 hour
+                            setArticles(data);
+                            setLoading(false);
+                            return;
+                        }
+                    } catch {}
+                }
+            }
+
+            const apiUrl = forceRefresh 
+                ? `/api/news?count=4&forceRefresh=true&t=${Date.now()}`
+                : `/api/news?count=4`;
+                
+            const res = await fetch(apiUrl);
             if (!res.ok) {
                 console.error("Widget news fetch failed:", res.status);
                 setArticles([]);
+                setLoading(false);
                 return;
             }
             const data = await res.json();
             setArticles(data.articles || []);
+            sessionStorage.setItem(CACHE_KEY, JSON.stringify({ data: data.articles || [], timestamp: Date.now() }));
+            
+            if (forceRefresh) {
+                setTimeout(() => setLoading(false), 400);
+            } else {
+                setLoading(false);
+            }
         } catch (err) {
             console.error("Widget news fetch error:", err);
             setArticles([]);
-        } finally {
             setLoading(false);
         }
     }, []);
 
     useEffect(() => {
-        fetchNews();
+        fetchNews(false);
     }, [fetchNews]);
 
     return (
@@ -60,7 +86,7 @@ export const FinanceNewsWidget = memo(function FinanceNewsWidget() {
                     <Newspaper className="w-5 h-5 text-primary" /> Headlines
                 </h2>
                 <button
-                    onClick={fetchNews}
+                    onClick={() => fetchNews(true)}
                     disabled={loading}
                     className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-white/5 transition-colors disabled:opacity-40"
                     title="Refresh"

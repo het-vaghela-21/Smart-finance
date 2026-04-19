@@ -19,13 +19,24 @@ export async function GET(request: NextRequest) {
         const { searchParams } = new URL(request.url);
         const query = searchParams.get("q") || "finance";
         const count = Math.min(parseInt(searchParams.get("count") || "10"), 10);
+        const forceRefresh = searchParams.get("forceRefresh") === "true";
 
-        // Return cached data if fresh for this specific query
         const cached = cache.get(query);
-        if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+        
+        // 1. If NOT forcing a refresh, use the 15-minute cache
+        if (!forceRefresh && cached && Date.now() - cached.timestamp < CACHE_DURATION) {
             return NextResponse.json({
                 articles: cached.articles.slice(0, count),
                 fromCache: true,
+            });
+        }
+
+        // 2. If forcing a refresh, enforce a 60-second cooldown to protect the free API quota (100 req/day)
+        if (forceRefresh && cached && Date.now() - cached.timestamp < 60 * 1000) {
+            return NextResponse.json({
+                articles: cached.articles.slice(0, count),
+                fromCache: true,
+                cooldown: true
             });
         }
 
@@ -47,9 +58,11 @@ export async function GET(request: NextRequest) {
             apiUrl = `https://gnews.io/api/v4/search?q=${encodeURIComponent(query + " finance")}&lang=en&max=${count}&apikey=${apiKey}`;
         }
 
-        const response = await fetch(apiUrl, {
-            next: { revalidate: 900 },
-        });
+        const fetchOptions: RequestInit = forceRefresh
+            ? { cache: "no-store" } // Bypass Next.js Data Cache
+            : { next: { revalidate: 900 } }; // Cache for 15 mins by default
+
+        const response = await fetch(apiUrl, fetchOptions);
 
         if (!response.ok) {
             const errorText = await response.text();
@@ -63,6 +76,7 @@ export async function GET(request: NextRequest) {
         const data = await response.json();
 
         // Transform articles to a clean flat shape
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const articles: TransformedArticle[] = (data.articles || []).map((article: any) => ({
             title: article.title || "",
             description: article.description || "",

@@ -4,11 +4,17 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import { AuthProvider } from "@/context/AuthContext";
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-sans',
+  weight: ['300', '400', '500', '600', '700', '800', '900'],
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: "FinAI – AI-Powered Investment Platform",
-  description: "Transform your wealth with AI-driven insights and automated risk management.",
+  description: "Transform your wealth with AI-driven insights, OSINT market intelligence, and automated risk management—all from one highly-secure dashboard.",
+  keywords: ["fintech", "AI investing", "portfolio management", "automated trading"],
 };
 
 export default function RootLayout({
@@ -17,10 +23,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={cn("font-sans", inter.variable, "dark")}>
-      <body
-        className={`${inter.variable} antialiased relative bg-background text-foreground`}
-      >
+    <html lang="en" className={cn("font-sans", inter.variable)}>
+      <body className={`${inter.variable} antialiased`}>
         <AuthProvider>
           <div className="relative z-10">
             {children}
