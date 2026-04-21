@@ -1,8 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, TrendingUp, Link as LinkIcon, PieChart, Quote } from "lucide-react";
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
+import { ArrowRight, TrendingUp, Link as LinkIcon, PieChart, Quote, Loader2 } from "lucide-react";
+
+const LandingVisualizer = dynamic(
+    () => import("@/components/dashboard/LandingVisualizer").then(mod => mod.LandingVisualizer),
+    { 
+        ssr: false, 
+        loading: () => (
+            <div className="w-full h-full flex items-center justify-center bg-surface-container-low/50 animate-pulse rounded-xl">
+                <Loader2 className="w-8 h-8 text-primary animate-spin opacity-50" />
+            </div>
+        )
+    }
+);
 
 export default function Home() {
     const [navScrolled, setNavScrolled] = useState(false);
@@ -68,7 +81,7 @@ export default function Home() {
                         </div>
                     </div>
                     <div className="w-full lg:w-1/2 relative z-10 flex justify-center lg:justify-end">
-                        <div className="relative w-full max-w-lg aspect-square rounded-2xl overflow-hidden ambient-shadow bg-surface-container-low flex items-center justify-center border border-outline-variant/15">
+                        <div className="relative w-full max-w-lg aspect-square rounded-2xl overflow-hidden ambient-shadow bg-surface-container-low flex items-center justify-center border border-outline-variant/15 p-4">
                             {/* Abstract render */}
                             <img alt="Abstract Green Shapes" className="w-full h-full object-cover mix-blend-multiply opacity-90" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDC9wRH2lKLt6BOROMk0GCcJW8HMDa61Tp2a7R5twDJBD2uTQ7cK0fYu7aW61diALCMHiiyEYD5QbLPximKvMHHJ2EC55t-SZfckT_KLnWbCajpsQRA_lbmfrD_t03TE_RKCxNQD082pC595_iJx2UNReHOQ_eH4k9qlcmcXE5XMPqH0ifaQ3M81nI0_yDVfmBHGOCUA74f3HMRktxwrKQmc6rWWxWjBUvl1bOf__PfSUuJmO2FJqkSliqwwdSdIiKplDdDfcrvUYY" />
                             
@@ -90,6 +103,18 @@ export default function Home() {
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </section>
+
+                {/* 3D Global Visualizer Break */}
+                <section className="w-full relative overflow-hidden bg-surface-container-lowest/50 border-y border-outline-variant/10">
+                    <div className="absolute inset-0 bg-primary/5 blur-3xl rounded-full scale-150 -z-10 mix-blend-multiply opacity-50"></div>
+                    <div className="max-w-7xl mx-auto flex flex-col items-center justify-center pt-16 pb-8">
+                        <div className="text-center z-10 pointer-events-none mb-[-80px] lg:mb-[-120px]">
+                            <span className="text-primary font-bold tracking-widest uppercase text-xs mb-4 block">Interactive Dimension</span>
+                            <h2 className="text-3xl font-extrabold tracking-tight text-on-surface">The Neural Wealth Node</h2>
+                        </div>
+                        <LandingVisualizer />
                     </div>
                 </section>
 

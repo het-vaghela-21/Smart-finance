@@ -5,6 +5,19 @@ import { Sparkles, Bot, Send, TrendingUp, AlertTriangle, Lightbulb, Wallet, Load
 import { cn } from "@/lib/utils";
 import { useDashboard } from "@/components/DashboardProvider";
 import ReactMarkdown from "react-markdown";
+import dynamic from "next/dynamic";
+
+const AIVisualizer = dynamic(
+    () => import("@/components/dashboard/AIVisualizer").then(mod => mod.AIVisualizer),
+    { 
+        ssr: false, 
+        loading: () => (
+            <div className="w-full h-full min-h-[250px] flex items-center justify-center bg-surface-container-low/50 animate-pulse rounded-[1.5rem]">
+                <Loader2 className="w-8 h-8 text-primary animate-spin opacity-50" />
+            </div>
+        )
+    }
+);
 
 type Insight = {
     id: number;
@@ -139,6 +152,11 @@ export default function AISuggestionsPage() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 {/* Left: Insights + Health */}
                 <div className="lg:col-span-7 space-y-6">
+                    {/* AI Visualizer Dedicated Block */}
+                    <div className="p-6 h-[250px] bg-surface-container-lowest ghost-border ambient-shadow rounded-[1.5rem] flex items-center justify-center">
+                        <AIVisualizer />
+                    </div>
+
                     {/* Smart Insights */}
                     <div className="p-6 min-h-[400px] bg-surface-container-lowest ghost-border ambient-shadow rounded-[1.5rem]">
                         <div className="flex items-center justify-between mb-6">
@@ -202,15 +220,15 @@ export default function AISuggestionsPage() {
                         <h2 className="text-xl font-bold text-on-surface mb-4 flex items-center gap-2">
                             <Wallet className="w-5 h-5 text-primary" /> Portfolio Health Score
                         </h2>
-                        <div className="flex items-center gap-6">
-                            <div className="w-24 h-24 rounded-full flex items-center justify-center shrink-0 border-[4px] border-surface-container"
+                        <div className="flex flex-col sm:flex-row items-center gap-6 relative">
+                            <div className="w-24 h-24 rounded-full flex items-center justify-center shrink-0 border-[4px] border-surface-container relative z-10 bg-surface-container-lowest"
                                 style={{ borderTopColor: "var(--primary)" }}>
                                 <span className="text-3xl font-bold text-on-surface">
                                     {healthScore !== null ? healthScore : "--"}
                                     <span className="text-lg text-on-surface-variant font-normal">/100</span>
                                 </span>
                             </div>
-                            <div className="text-on-surface-variant text-sm leading-relaxed">
+                            <div className="text-on-surface-variant text-sm leading-relaxed relative z-10">
                                 {healthText ? healthText : "Loading scoring algorithms..."}
                             </div>
                         </div>

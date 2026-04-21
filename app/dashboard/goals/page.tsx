@@ -4,6 +4,21 @@ import { useState } from "react";
 import { useDashboard } from "@/components/DashboardProvider";
 import { Target, PlusCircle, Trash2, HandCoins, CheckCircle2 } from "lucide-react";
 import { format } from "date-fns";
+import dynamic from "next/dynamic";
+import { Loader2 } from "lucide-react";
+
+// Dynamically import heavy 3D components so they don't block the UI thread during navigation clicks
+const GoalVisualizer = dynamic(
+    () => import("@/components/dashboard/GoalVisualizer").then(mod => mod.GoalVisualizer),
+    { 
+        ssr: false, 
+        loading: () => (
+            <div className="w-full h-full flex items-center justify-center bg-surface-container-low/50 animate-pulse rounded-xl">
+                <Loader2 className="w-8 h-8 text-primary animate-spin opacity-50" />
+            </div>
+        )
+    }
+);
 
 export default function GoalsPage() {
     const { goals, loadingGoals, addGoal, addFundsToGoal, deleteGoal } = useDashboard();
@@ -38,14 +53,23 @@ export default function GoalsPage() {
 
     return (
         <div className="w-full max-w-7xl mx-auto space-y-8 relative z-10 pb-20">
-            <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div>
-                    <h1 className="text-3xl font-bold text-on-surface tracking-tighter flex items-center gap-3">
-                        <Target className="w-8 h-8 text-primary" /> Financial Goals
+            {/* Net Worth Hero Card */}
+            <div className="bg-surface-container-lowest rounded-[2rem] p-8 lg:p-12 relative overflow-hidden ambient-shadow ghost-border flex flex-col lg:flex-row items-center justify-between min-h-[350px]">
+                {/* Text Side */}
+                <div className="w-full lg:w-1/2 relative z-10">
+                    <h1 className="text-5xl lg:text-7xl font-extrabold tracking-tighter mb-4 text-on-surface">
+                        Financial Targets
                     </h1>
-                    <p className="text-on-surface-variant">Set targets and track your progress to financial freedom.</p>
+                    <p className="text-xl text-on-surface-variant font-medium">
+                        Set horizons. Execute. Achieve freedom.
+                    </p>
                 </div>
-            </header>
+
+                {/* 3D Visualizer Side */}
+                <div className="w-full lg:w-1/2 h-[300px] lg:h-full absolute right-0 bottom-0 lg:top-0 opacity-80 lg:opacity-100 mix-blend-luminosity lg:mix-blend-normal">
+                    <GoalVisualizer />
+                </div>
+            </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Create Goal Form */}

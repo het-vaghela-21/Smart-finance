@@ -138,7 +138,8 @@ export function FinanceNews() {
     // Fetch on initial load only
     useEffect(() => {
         fetchNews(CATEGORIES[0].query, false);
-    }, [fetchNews]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const handleCategoryClick = (index: number) => {
         setActiveCategory(index);

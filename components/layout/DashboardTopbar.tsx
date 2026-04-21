@@ -14,13 +14,15 @@ import {
     Shield,
     Target,
     Menu,
-    X
+    X,
+    Wallet
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
 
 const navItems = [
     { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+    { title: "Accounts", href: "/dashboard/accounts", icon: Wallet },
     { title: "Charts", href: "/dashboard/charts", icon: BarChart3 },
     { title: "Transactions", href: "/dashboard/transactions", icon: ReceiptText },
     { title: "Goals", href: "/dashboard/goals", icon: Target },
@@ -44,7 +46,7 @@ export const DashboardTopbar = memo(function DashboardTopbar() {
 
     return (
         <nav className={cn(
-            "sticky top-0 left-0 w-full z-50 transition-all duration-300 ease-in-out border-b text-sm backdrop-blur-xl",
+            "sticky top-0 left-0 w-full z-[9999] transition-all duration-300 ease-in-out border-b text-sm backdrop-blur-xl pointer-events-auto",
             scrolled ? "bg-surface-container-lowest/80 border-outline-variant/30 shadow-[0_20px_40px_-10px_rgba(6,78,59,0.06)]"
                      : "bg-surface-container-lowest/40 border-outline-variant/10"
         )}>
