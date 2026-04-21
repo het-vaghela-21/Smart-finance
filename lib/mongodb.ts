@@ -7,10 +7,10 @@ if (!MONGODB_URI) {
 }
 
 // Use a cached connection across hot-reloads in development
-let cached = (global as unknown as { __mongoose: { conn: typeof mongoose | null; promise: Promise<typeof mongoose> | null } }).__mongoose;
+let cached = (global as unknown as { __mongoose_cache_v2: { conn: typeof mongoose | null; promise: Promise<typeof mongoose> | null } }).__mongoose_cache_v2;
 
 if (!cached) {
-    cached = (global as unknown as { __mongoose: { conn: typeof mongoose | null; promise: Promise<typeof mongoose> | null } }).__mongoose = { conn: null, promise: null };
+    cached = (global as unknown as { __mongoose_cache_v2: { conn: typeof mongoose | null; promise: Promise<typeof mongoose> | null } }).__mongoose_cache_v2 = { conn: null, promise: null };
 }
 
 export async function connectMongo() {
@@ -19,7 +19,10 @@ export async function connectMongo() {
     if (!cached.promise) {
         cached.promise = mongoose.connect(MONGODB_URI, {
             bufferCommands: false,
-        }).then((m) => m);
+        }).then((m) => m).catch(err => {
+            cached.promise = null;
+            throw err;
+        });
     }
 
     cached.conn = await cached.promise;

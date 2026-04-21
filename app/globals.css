@@ -11,59 +11,48 @@
 }
 
 /* ============================================================
-   QUANTEXA-INSPIRED ENTERPRISE DESIGN SYSTEM
+   VERIDIAN LEDGER DESIGN SYSTEM
    ============================================================ */
 
 /* ---------- CSS Custom Properties (Tokens) ---------- */
 :root {
   /* Brand Colors */
-  --qx-bg:        #05050F;
-  --qx-surface:   #0D0D1A;
-  --qx-surface-2: #12102A;
-  --qx-violet:    #7C3AED;
-  --qx-violet-lt: #9F67FF;
-  --qx-cyan:      #22D3EE;
-  --qx-cyan-lt:   #67E8F9;
-  --qx-border:    rgba(255,255,255,0.07);
-  --qx-border-glow: rgba(124,58,237,0.35);
-  --qx-text:      #F4F4F8;
-  --qx-muted:     #71717A;
+  --surface: #effcf9;
+  --surface-container-low: #e9f6f3;
+  --surface-container-lowest: #ffffff;
+  --surface-variant: #d8e5e2;
+  --on-surface: #121e1c;
+  --on-surface-variant: #3c4a42;
+  --primary: #006c49;
+  --primary-container: #10b981;
+  --on-primary: #ffffff;
+  --on-primary-container: #00422b;
+  --error: #ba1a1a;
+  --error-container: #ffdad6;
+  --outline: #6c7a71;
+  --outline-variant: #bbcabf;
 
-  /* Shadcn tokens — kept for compatibility */
-  --background: oklch(0.072 0.016 285);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.105 0.02 285);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.105 0.02 285);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.58 0.245 283.5);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.18 0.025 285);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.18 0.025 285);
-  --muted-foreground: oklch(0.55 0 0);
-  --accent: oklch(0.73 0.18 195);
-  --accent-foreground: oklch(0.072 0.016 285);
-  --destructive: oklch(0.58 0.22 27);
-  --border: oklch(1 0 0 / 8%);
-  --input: oklch(1 0 0 / 12%);
-  --ring: oklch(0.58 0.245 283.5);
-  --chart-1: oklch(0.73 0.18 195);
-  --chart-2: oklch(0.58 0.245 283.5);
-  --chart-3: oklch(0.66 0.22 265);
-  --chart-4: oklch(0.80 0.12 160);
-  --chart-5: oklch(0.70 0.14 30);
+  /* Shadcn tokens */
+  --background: #effcf9;
+  --foreground: #121e1c;
+  --card: #ffffff;
+  --card-foreground: #121e1c;
+  --popover: #ffffff;
+  --popover-foreground: #121e1c;
+  --primary-shadcn: #006c49;
+  --primary-foreground-shadcn: #ffffff;
+  --secondary: #e9f6f3;
+  --secondary-foreground: #121e1c;
+  --muted: #e9f6f3;
+  --muted-foreground: #3c4a42;
+  --accent: #e9f6f3;
+  --accent-foreground: #121e1c;
+  --destructive: #ba1a1a;
+  --destructive-foreground: #ffffff;
+  --border: #bbcabf;
+  --input: #d8e5e2;
+  --ring: #006c49;
   --radius: 0.75rem;
-
-  /* Sidebar */
-  --sidebar: oklch(0.105 0.02 285);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.58 0.245 283.5);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.18 0.025 285);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 8%);
-  --sidebar-ring: oklch(0.58 0.245 283.5);
 }
 
 /* ---------- Base ---------- */
@@ -71,43 +60,54 @@
   .theme { --font-sans: var(--font-sans); }
 
   body {
-    background-color: var(--qx-bg);
-    color: var(--qx-text);
+    background-color: var(--background);
+    color: var(--foreground);
     @apply antialiased;
   }
 
   html { @apply font-sans; scroll-behavior: smooth; }
 
-  ::selection { background: rgba(124,58,237,0.35); }
+  ::selection { background: rgba(16,185,129,0.35); }
 }
 
 /* ---------- Utility Classes ---------- */
 @layer utilities {
-  /* Glass panel */
+  /* Ghost Border */
+  .ghost-border {
+    border: 1px solid rgba(187, 202, 191, 0.40); /* increased slightly from 15% for visibility */
+  }
+
+  /* Glass Gradient */
+  .glass-gradient {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-container) 100%);
+    color: white;
+  }
+
+  /* Ambient Shadow Hover Effect */
+  .ambient-shadow-hover {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .ambient-shadow-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 40px -10px rgba(6, 78, 59, 0.08); /* slightly heavier ambient shadow */
+  }
+
+  /* Ambient Shadow */
+  .ambient-shadow {
+    box-shadow: 0 20px 40px -10px rgba(6, 78, 59, 0.06);
+  }
+
+  /* Glass panel (high end glassmorphism, mostly for floating overlays) */
   .glass-panel {
-    background: rgba(13, 13, 26, 0.6);
+    background: rgba(216, 229, 226, 0.6); /* surface_variant */
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border: 1px solid var(--qx-border);
+    border: 1px solid rgba(187, 202, 191, 0.2);
   }
 
-  /* Neon glow on hover (violet) */
-  .neon-hover-glow {
-    transition: box-shadow 0.3s ease, border-color 0.3s ease;
-  }
-  .neon-hover-glow:hover {
-    box-shadow: 0 0 28px rgba(124,58,237,0.30), 0 0 60px rgba(124,58,237,0.12);
-    border-color: var(--qx-border-glow) !important;
-  }
-
-  /* Cyan accent glow */
-  .neon-cyan-glow:hover {
-    box-shadow: 0 0 28px rgba(34,211,238,0.30), 0 0 60px rgba(34,211,238,0.10);
-  }
-
-  /* Gradient text — violet to cyan */
+  /* Gradient text */
   .gradient-text {
-    background: linear-gradient(135deg, #9F67FF 0%, #22D3EE 100%);
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-container) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;

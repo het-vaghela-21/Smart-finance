@@ -75,7 +75,7 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
 
                 if (goalsRes.ok) {
                     const data = await goalsRes.json();
-                    const fetchedGoals = (data.goals || []).map((g: any) => ({
+                    const fetchedGoals = (data.goals || []).map((g: Omit<Goal, 'createdAt'> & { createdAt: string | number | Date }) => ({
                         ...g,
                         createdAt: new Date(g.createdAt)
                     }));

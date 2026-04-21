@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Veridian Ledger - Master Your Wealth with Precision</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline": "#6c7a71",
+                        "secondary-fixed": "#c3ecd7",
+                        "on-error": "#ffffff",
+                        "inverse-primary": "#4edea3",
+                        "surface-container": "#e4f1ee",
+                        "on-secondary-container": "#476c5b",
+                        "tertiary-fixed-dim": "#95d3ba",
+                        "background": "#effcf9",
+                        "secondary-fixed-dim": "#a8cfbc",
+                        "error-container": "#ffdad6",
+                        "tertiary-container": "#71af97",
+                        "secondary": "#416656",
+                        "primary-container": "#10b981",
+                        "on-secondary-fixed-variant": "#294e3f",
+                        "on-tertiary": "#ffffff",
+                        "on-surface": "#121e1c",
+                        "on-tertiary-container": "#004231",
+                        "surface-dim": "#d0ddda",
+                        "error": "#ba1a1a",
+                        "surface-tint": "#006c49",
+                        "on-tertiary-fixed-variant": "#0b513d",
+                        "surface": "#effcf9",
+                        "primary": "#006c49",
+                        "on-secondary-fixed": "#002115",
+                        "on-primary-fixed-variant": "#005236",
+                        "on-primary-container": "#00422b",
+                        "tertiary-fixed": "#b0f0d6",
+                        "surface-container-high": "#deebe8",
+                        "on-tertiary-fixed": "#002117",
+                        "on-secondary": "#ffffff",
+                        "on-background": "#121e1c",
+                        "surface-bright": "#effcf9",
+                        "primary-fixed": "#6ffbbe",
+                        "surface-container-low": "#e9f6f3",
+                        "primary-fixed-dim": "#4edea3",
+                        "inverse-on-surface": "#e6f3f1",
+                        "on-primary-fixed": "#002113",
+                        "on-error-container": "#93000a",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-container": "#c3ecd7",
+                        "tertiary": "#2b6954",
+                        "surface-variant": "#d8e5e2",
+                        "surface-container-highest": "#d8e5e2",
+                        "on-primary": "#ffffff",
+                        "inverse-surface": "#273331",
+                        "on-surface-variant": "#3c4a42",
+                        "outline-variant": "#bbcabf"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(187, 202, 191, 0.15); /* outline-variant at 15% */
+        }
+        .text-gradient {
+            background: linear-gradient(135deg, #006c49, #10b981);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .bg-gradient-cta {
+            background: linear-gradient(135deg, #006c49, #10b981);
+        }
+        .ambient-shadow {
+            box-shadow: 0 20px 40px -10px rgba(6, 78, 59, 0.06);
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body antialiased selection:bg-primary-container selection:text-on-primary-container">
+<!-- Top Navigation (Shared Component) -->
+<nav class="fixed top-0 left-0 w-full z-50 bg-[#effcf9]/70 backdrop-blur-xl shadow-[0_20px_40px_-10px_rgba(6,78,59,0.06)] transition-all">
+<div class="flex justify-between items-center px-8 py-5 max-w-7xl mx-auto">
+<div class="text-2xl font-bold tracking-tighter text-[#006c49]">Veridian Ledger</div>
+<!-- Web Navigation -->
+<div class="hidden md:flex items-center space-x-8 font-['Inter'] tracking-tight text-sm font-medium">
+<a class="text-[#121e1c] opacity-80 hover:opacity-100 hover:text-[#10b981] transition-all duration-300" href="#">Features</a>
+<a class="text-[#121e1c] opacity-80 hover:opacity-100 hover:text-[#10b981] transition-all duration-300" href="#">Dashboard</a>
+<a class="text-[#121e1c] opacity-80 hover:opacity-100 hover:text-[#10b981] transition-all duration-300" href="#">Accounts</a>
+<a class="text-[#121e1c] opacity-80 hover:opacity-100 hover:text-[#10b981] transition-all duration-300" href="#">Pricing</a>
+</div>
+<div class="flex items-center space-x-4 font-['Inter'] tracking-tight text-sm font-medium">
+<button class="text-[#121e1c] opacity-80 hover:opacity-100 hover:text-[#10b981] transition-all duration-300 hidden md:block">Log In</button>
+<button class="bg-gradient-cta text-on-primary px-5 py-2.5 rounded-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 font-semibold shadow-[0_10px_20px_-5px_rgba(16,185,129,0.3)] scale-95 active:scale-90">Get Started</button>
+</div>
+</div>
+</nav>
+<!-- Main Content -->
+<main class="pt-32 pb-20 overflow-hidden">
+<!-- Hero Section -->
+<section class="relative max-w-7xl mx-auto px-8 lg:px-12 pt-12 lg:pt-24 pb-20 flex flex-col lg:flex-row items-center justify-between gap-16">
+<!-- Decorative Background Blob -->
+<div class="absolute top-0 right-0 w-[800px] h-[800px] bg-primary-container/10 rounded-full blur-3xl -z-10 translate-x-1/3 -translate-y-1/4"></div>
+<div class="w-full lg:w-1/2 flex flex-col items-start space-y-8 z-10">
+<span class="px-4 py-1.5 rounded-full bg-secondary-fixed text-on-secondary-fixed text-sm font-semibold tracking-wide uppercase shadow-sm">
+                    The Luminous Ledger
+                </span>
+<h1 class="text-5xl lg:text-[4rem] leading-[1.1] font-extrabold tracking-tight text-on-surface">
+                    Master Your Wealth with <span class="text-gradient">Precision</span>
+</h1>
+<p class="text-lg text-on-surface-variant max-w-lg leading-relaxed">
+                    Elevate your personal finance experience with professional-grade tools. Veridian Ledger provides unparalleled clarity and control over your financial ecosystem.
+                </p>
+<div class="flex flex-col sm:flex-row items-center gap-4 pt-4 w-full sm:w-auto">
+<button class="w-full sm:w-auto bg-gradient-cta text-on-primary px-8 py-4 rounded-md text-base font-semibold hover:shadow-[0_15px_30px_-10px_rgba(16,185,129,0.4)] transition-all duration-300 hover:-translate-y-1">
+                        Get Started for Free
+                    </button>
+<button class="w-full sm:w-auto px-8 py-4 rounded-md text-primary font-semibold hover:bg-surface-variant/30 transition-all duration-300 flex items-center justify-center gap-2">
+                        View Demo <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+<div class="flex items-center gap-4 pt-8 text-sm text-on-surface-variant">
+<div class="flex -space-x-3">
+<img alt="User 1" class="w-10 h-10 rounded-full border-2 border-surface-container-lowest object-cover" data-alt="close up portrait of young professional smiling gently" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCW5sjaSWnDWXtyLhtx9ltDJ0wYLIOUXRukmK0pc_TSYG-_d6kPjzgV5i2vVneUTybJqpi4aFr5uIPdIf94SvJjPKONkbID-YqwetF7I-A9-tFaqlQwbO6_EtJWpxa98vdQ8NNrtyahbzSenlKxjtJNrFMD1O097oNxhF9ZShe4NhrPYUAthgRqJpygHLZwLKOO11jFe6z1-PzK97O_xNnRG_JxjxdRdaTi2UfoOEnJfaOqpG1O6kDjA4TviG8VHAEZw_IcqVbv7L0"/>
+<img alt="User 2" class="w-10 h-10 rounded-full border-2 border-surface-container-lowest object-cover" data-alt="close up portrait of young male professional looking confident" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDmNq50IFKBJH8SPD8ctKQBk7oI471oqTQt9HDpRJ8Sd8pM6JKksj8eJzBcen5Cyc8cqcTECQVnoYNk_4ot5HG-qYk_GdNXZmHp_y7uCRbsrkU3qdzn_BLkoqoniWrmcHIFLATrqZJ7lWndM2G69Ya0D42QDrX4vLFIXdaFe6OaUZ3tC7HZQjeve8xfWx9QxplS5qJWHDkYYEZSEJ-1Fs1ZvorJ00V_dCwyMyQ_hObhPcW3ax-6Ih6aDko8ENORHn_fJvS0h0QB33M"/>
+<img alt="User 3" class="w-10 h-10 rounded-full border-2 border-surface-container-lowest object-cover" data-alt="close up portrait of older female executive smiling" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC6s2bVsMGVxVvW_BtpCUR8VArv5tpa8uxm5MTaGMr7hienXXvW_qtQbxj_LKOBCCqewqWo9YZOokNRJa8kAy4r-W6ipdaNBAMh3tpRg8d04axs1pN6jR4_S0-yqq0qC6Ce4uMJ5L3_b_xMGfNA3CFHpUPYd-0qpT6qou25nFJZuuYgUyJJm_jLeJqdbDVKAFKYuwcmQeUg6iNPYv-oiCh1duWTri5r2hgTdHLeCrHjP_lZ9-Q7f9tiyasgc3FAY5x6t-VMJam0jYU"/>
+</div>
+<p>Trusted by <span class="font-bold text-on-surface">10,000+</span> individuals.</p>
+</div>
+</div>
+<div class="w-full lg:w-1/2 relative z-10 flex justify-center lg:justify-end">
+<div class="relative w-full max-w-lg aspect-square rounded-2xl overflow-hidden ambient-shadow bg-surface-container-low flex items-center justify-center border border-outline-variant/15">
+<!-- Placeholder for 3D Render -->
+<img alt="Abstract 3D Green Shapes" class="w-full h-full object-cover mix-blend-multiply opacity-90" data-alt="high quality 3d render of abstract emerald green floating geometric shapes and spheres in a soft minimal studio lighting setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDC9wRH2lKLt6BOROMk0GCcJW8HMDa61Tp2a7R5twDJBD2uTQ7cK0fYu7aW61diALCMHiiyEYD5QbLPximKvMHHJ2EC55t-SZfckT_KLnWbCajpsQRA_lbmfrD_t03TE_RKCxNQD082pC595_iJx2UNReHOQ_eH4k9qlcmcXE5XMPqH0ifaQ3M81nI0_yDVfmBHGOCUA74f3HMRktxwrKQmc6rWWxWjBUvl1bOf__PfSUuJmO2FJqkSliqwwdSdIiKplDdDfcrvUYY"/>
+<!-- Floating Glass Elements for depth -->
+<div class="absolute bottom-12 -left-8 glass-panel p-6 rounded-xl ambient-shadow w-64 animate-[bounce_4s_infinite]">
+<div class="flex items-center justify-between mb-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-container/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">monitoring</span>
+</div>
+<div>
+<p class="text-xs text-on-surface-variant uppercase tracking-wider font-semibold">Net Worth</p>
+<p class="font-bold text-on-surface">$1.24M</p>
+</div>
+</div>
+<span class="text-primary-container font-semibold text-sm">+2.4%</span>
+</div>
+<div class="h-2 w-full bg-surface-variant rounded-full overflow-hidden">
+<div class="h-full bg-gradient-cta w-3/4 rounded-full"></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Features Bento Grid -->
+<section class="py-24 bg-surface-container-low/50 relative">
+<div class="max-w-7xl mx-auto px-8 lg:px-12">
+<div class="text-center mb-16 max-w-2xl mx-auto">
+<h2 class="text-3xl lg:text-4xl font-extrabold tracking-tight text-on-surface mb-6">Designed for Financial Clarity</h2>
+<p class="text-lg text-on-surface-variant">We've distilled complex financial modeling into three core pillars, allowing you to manage your wealth with intuitive ease.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+<!-- Feature 1 -->
+<div class="bg-surface-container-lowest rounded-xl p-8 ambient-shadow border border-outline-variant/15 flex flex-col items-start hover:-translate-y-1 transition-transform duration-300">
+<div class="w-14 h-14 rounded-full bg-secondary-fixed flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-on-secondary-fixed-variant" style="font-variation-settings: 'FILL' 1;">insights</span>
+</div>
+<h3 class="text-xl font-bold text-on-surface mb-4">Real-time Analytics</h3>
+<p class="text-on-surface-variant text-base leading-relaxed mb-6 flex-grow">Watch your net worth evolve in real-time. Our dynamic charting engine visualizes trends before they become obvious.</p>
+<a class="text-primary font-semibold text-sm flex items-center gap-1 hover:text-primary-container transition-colors" href="#">Explore Analytics <span class="material-symbols-outlined text-sm">arrow_forward</span></a>
+</div>
+<!-- Feature 2 -->
+<div class="bg-surface-container-lowest rounded-xl p-8 ambient-shadow border border-outline-variant/15 flex flex-col items-start hover:-translate-y-1 transition-transform duration-300 md:-translate-y-4">
+<div class="w-14 h-14 rounded-full bg-tertiary-fixed flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-on-tertiary-fixed-variant" style="font-variation-settings: 'FILL' 1;">account_balance</span>
+</div>
+<h3 class="text-xl font-bold text-on-surface mb-4">Seamless Integration</h3>
+<p class="text-on-surface-variant text-base leading-relaxed mb-6 flex-grow">Connect thousands of global institutions securely. Your entire financial portfolio, synchronized and synthesized in one place.</p>
+<a class="text-primary font-semibold text-sm flex items-center gap-1 hover:text-primary-container transition-colors" href="#">View Integrations <span class="material-symbols-outlined text-sm">arrow_forward</span></a>
+</div>
+<!-- Feature 3 -->
+<div class="bg-surface-container-lowest rounded-xl p-8 ambient-shadow border border-outline-variant/15 flex flex-col items-start hover:-translate-y-1 transition-transform duration-300">
+<div class="w-14 h-14 rounded-full bg-primary-container/20 flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">track_changes</span>
+</div>
+<h3 class="text-xl font-bold text-on-surface mb-4">Intelligent Budgeting</h3>
+<p class="text-on-surface-variant text-base leading-relaxed mb-6 flex-grow">Set targets that adapt to your lifestyle. Smart categorization learns your spending habits to automate your ledger.</p>
+<a class="text-primary font-semibold text-sm flex items-center gap-1 hover:text-primary-container transition-colors" href="#">Discover Budgeting <span class="material-symbols-outlined text-sm">arrow_forward</span></a>
+</div>
+</div>
+</div>
+</section>
+<!-- Showcase Section (Screenshots) -->
+<section class="py-24 relative overflow-hidden">
+<!-- Background ambient light -->
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[500px] bg-tertiary-fixed-dim/20 rounded-full blur-[100px] -z-10"></div>
+<div class="max-w-7xl mx-auto px-8 lg:px-12">
+<div class="text-center mb-16">
+<span class="text-primary font-bold tracking-widest uppercase text-xs mb-4 block">The Interface</span>
+<h2 class="text-3xl lg:text-4xl font-extrabold tracking-tight text-on-surface mb-6">A Workspace, Not a Spreadsheet</h2>
+</div>
+<div class="relative w-full max-w-5xl mx-auto h-[500px] lg:h-[600px]">
+<!-- Dashboard Mockup (Back) -->
+<div class="absolute top-0 right-0 w-[80%] h-full bg-surface-container-lowest rounded-2xl ambient-shadow border border-outline-variant/20 overflow-hidden transform rotate-2 origin-bottom-right opacity-60 blur-[1px] transition-all duration-500 hover:rotate-0 hover:opacity-100 hover:blur-0 hover:z-20">
+<!-- Abstract Dashboard Header -->
+<div class="h-16 bg-surface-container flex items-center px-6 border-b border-outline-variant/10">
+<div class="w-32 h-4 bg-surface-variant rounded-full"></div>
+</div>
+<div class="p-8 grid grid-cols-3 gap-6">
+<div class="col-span-2 space-y-6">
+<div class="h-48 bg-surface-container-low rounded-xl"></div>
+<div class="grid grid-cols-2 gap-6">
+<div class="h-32 bg-surface-container-low rounded-xl"></div>
+<div class="h-32 bg-surface-container-low rounded-xl"></div>
+</div>
+</div>
+<div class="col-span-1 h-full bg-surface-container-low rounded-xl"></div>
+</div>
+</div>
+<!-- Accounts Mockup (Front) -->
+<div class="absolute bottom-0 left-0 w-[80%] h-[90%] bg-surface-container-lowest rounded-2xl ambient-shadow border border-outline-variant/30 overflow-hidden transform -rotate-2 origin-bottom-left z-10 transition-all duration-500 hover:rotate-0 hover:z-30 hover:scale-[1.02]">
+<!-- Abstract Accounts Header -->
+<div class="h-16 bg-surface-container flex items-center px-6 border-b border-outline-variant/10 justify-between">
+<div class="w-48 h-6 bg-surface-variant rounded-md"></div>
+<div class="w-24 h-8 bg-primary-container/20 rounded-md"></div>
+</div>
+<div class="p-8 space-y-4">
+<!-- Account Rows -->
+<div class="h-20 bg-surface-container-low rounded-xl flex items-center px-6 gap-4">
+<div class="w-10 h-10 rounded-full bg-secondary-fixed"></div>
+<div class="space-y-2 flex-grow">
+<div class="h-4 w-32 bg-surface-variant rounded"></div>
+<div class="h-3 w-24 bg-surface-variant rounded"></div>
+</div>
+<div class="h-6 w-20 bg-surface-variant rounded"></div>
+</div>
+<div class="h-20 bg-surface-container-low rounded-xl flex items-center px-6 gap-4">
+<div class="w-10 h-10 rounded-full bg-tertiary-fixed"></div>
+<div class="space-y-2 flex-grow">
+<div class="h-4 w-40 bg-surface-variant rounded"></div>
+<div class="h-3 w-20 bg-surface-variant rounded"></div>
+</div>
+<div class="h-6 w-24 bg-surface-variant rounded"></div>
+</div>
+<div class="h-20 bg-surface-container-low rounded-xl flex items-center px-6 gap-4">
+<div class="w-10 h-10 rounded-full bg-primary-fixed-dim"></div>
+<div class="space-y-2 flex-grow">
+<div class="h-4 w-28 bg-surface-variant rounded"></div>
+<div class="h-3 w-32 bg-surface-variant rounded"></div>
+</div>
+<div class="h-6 w-16 bg-surface-variant rounded"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Testimonial / Social Proof -->
+<section class="py-24 bg-surface">
+<div class="max-w-4xl mx-auto px-8 lg:px-12">
+<div class="bg-surface-container-low rounded-2xl p-12 lg:p-16 text-center ambient-shadow relative overflow-hidden">
+<span class="material-symbols-outlined text-6xl text-primary-container/20 absolute top-8 left-8 rotate-180">format_quote</span>
+<p class="text-2xl lg:text-3xl font-medium text-on-surface leading-snug mb-10 relative z-10">
+                        "Veridian Ledger didn't just organize my finances; it elevated my entire perspective on wealth building. The interface feels less like an app and more like a private banking conciege."
+                    </p>
+<div class="flex items-center justify-center gap-4">
+<img alt="Sarah Jenkins" class="w-14 h-14 rounded-full object-cover border-2 border-surface-container-lowest" data-alt="portrait of a professional female executive looking composed" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDPwDD3VcqRpUnlnOLQup6IUrRLYNDmhhJrI8P5y5BjxBz98UUgd_kUrj7KsRPu2eXvPyQvSwY45qPxK-EjJUPKfT7LCrOrG4u04HJ4OemyGN4AXMMfINcpPae2fmyH5ivVkXVQ64kja2t-PKUJmyHWL8uS1rC2dYQIXXEzwMc3IFDCo9ZCozxk2OuF1_FLUPj9HQ245UEYIhRwh4Gfs-eJf7q-QUrdO3WKJt6YmF7wmBkuItPzgkhd4VQjtnnCdbV5HQe6d69DiVo"/>
+<div class="text-left">
+<p class="font-bold text-on-surface">Sarah Jenkins</p>
+<p class="text-sm text-on-surface-variant">Director of Operations, Horizon Tech</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Final CTA Section -->
+<section class="py-24 relative overflow-hidden">
+<div class="max-w-5xl mx-auto px-8 lg:px-12 relative z-10">
+<div class="bg-on-surface text-surface rounded-3xl p-12 lg:p-20 text-center flex flex-col items-center justify-center ambient-shadow">
+<h2 class="text-4xl lg:text-5xl font-extrabold tracking-tight mb-6">Ready to illuminate your ledger?</h2>
+<p class="text-lg text-surface-variant max-w-2xl mx-auto mb-10">
+                        Join thousands of professionals who have already upgraded their financial operating system. Sign up today and experience the clarity of Veridian Ledger.
+                    </p>
+<button class="bg-gradient-cta text-on-primary px-10 py-5 rounded-md text-lg font-bold hover:shadow-[0_15px_30px_-10px_rgba(16,185,129,0.5)] transition-all duration-300 hover:-translate-y-1 w-full sm:w-auto">
+                        Create Your Free Account
+                    </button>
+<p class="mt-6 text-sm text-surface-variant opacity-70">No credit card required. 14-day free trial on premium features.</p>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer (Shared Component) -->
+<footer class="w-full pt-20 pb-10 bg-[#effcf9]">
+<div class="max-w-7xl mx-auto px-8 grid grid-cols-1 md:grid-cols-2 gap-8 border-t border-[#006c49]/10 pt-10">
+<div>
+<div class="text-xl font-bold text-[#006c49] mb-4">Veridian Ledger</div>
+<p class="font-['Inter'] text-sm leading-relaxed text-[#121e1c] opacity-60 max-w-xs">
+                    © 2024 Veridian Ledger. The Luminous Ledger for premium wealth management.
+                </p>
+</div>
+<div class="flex flex-wrap gap-x-8 gap-y-4 md:justify-end font-['Inter'] text-sm leading-relaxed">
+<a class="text-[#121e1c] opacity-60 hover:opacity-100 hover:text-[#10b981] underline-offset-4 hover:underline ease-in-out duration-200" href="#">Privacy Policy</a>
+<a class="text-[#121e1c] opacity-60 hover:opacity-100 hover:text-[#10b981] underline-offset-4 hover:underline ease-in-out duration-200" href="#">Terms of Service</a>
+<a class="text-[#121e1c] opacity-60 hover:opacity-100 hover:text-[#10b981] underline-offset-4 hover:underline ease-in-out duration-200" href="#">Security Architecture</a>
+<a class="text-[#121e1c] opacity-60 hover:opacity-100 hover:text-[#10b981] underline-offset-4 hover:underline ease-in-out duration-200" href="#">Contact Support</a>
+<a class="text-[#121e1c] opacity-60 hover:opacity-100 hover:text-[#10b981] underline-offset-4 hover:underline ease-in-out duration-200" href="#">Financial Disclosure</a>
+</div>
+</div>
+</footer>
+</body></html>

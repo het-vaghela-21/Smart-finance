@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import Link from "next/link";
-import { Eye, EyeOff, Mail, Lock, User, Phone, Loader2, Zap } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User, Phone, Loader2, TrendingUp } from "lucide-react";
 
 export default function RegisterPage() {
     const { signUp, signInWithGoogle } = useAuth();
@@ -44,44 +44,21 @@ export default function RegisterPage() {
         }
     };
 
-    const inputStyle = {
-        background: "rgba(255,255,255,0.04)",
-        border: "1px solid rgba(255,255,255,0.09)",
-    };
-    const focusInput = (e: React.FocusEvent<HTMLInputElement>) => {
-        e.currentTarget.style.border = "1px solid rgba(124,58,237,0.55)";
-        e.currentTarget.style.boxShadow = "0 0 0 3px rgba(124,58,237,0.10)";
-    };
-    const blurInput = (e: React.FocusEvent<HTMLInputElement>) => {
-        e.currentTarget.style.border = "1px solid rgba(255,255,255,0.09)";
-        e.currentTarget.style.boxShadow = "none";
-    };
-
     return (
         <div className="flex items-center justify-center min-h-screen px-4 py-16">
             <div className="w-full max-w-md">
-                <div
-                    className="rounded-3xl p-8"
-                    style={{
-                        background: "rgba(13,13,26,0.75)",
-                        backdropFilter: "blur(24px)",
-                        border: "1px solid rgba(124,58,237,0.20)",
-                        boxShadow: "0 0 60px rgba(124,58,237,0.10), 0 0 120px rgba(34,211,238,0.04)",
-                    }}
-                >
+                <div className="bg-surface-container-lowest rounded-3xl p-8 ambient-shadow border border-outline-variant/20">
                     {/* Header */}
                     <div className="mb-8 text-center">
-                        <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4"
-                            style={{ background: "linear-gradient(135deg, #7C3AED, #22D3EE)", boxShadow: "0 0 24px rgba(124,58,237,0.35)" }}>
-                            <Zap className="w-7 h-7 text-white" />
+                        <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4 bg-primary-container/20">
+                            <TrendingUp className="w-7 h-7 text-primary" />
                         </div>
-                        <h1 className="text-3xl font-bold text-white tracking-tight mb-2">Create account</h1>
-                        <p className="text-zinc-400 text-sm">Start your FinAI journey today</p>
+                        <h1 className="text-3xl font-bold text-on-surface tracking-tight mb-2">Create account</h1>
+                        <p className="text-on-surface-variant text-sm">Start your Veridian Ledger journey today</p>
                     </div>
 
                     {error && (
-                        <div className="mb-6 px-4 py-3 rounded-xl text-red-400 text-sm text-center"
-                            style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)" }}>
+                        <div className="mb-6 px-4 py-3 rounded-xl text-error text-sm text-center bg-error-container/20 border border-error/20">
                             {error}
                         </div>
                     )}
@@ -90,10 +67,7 @@ export default function RegisterPage() {
                     <button
                         onClick={handleGoogle}
                         disabled={googleLoading}
-                        className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl text-white text-sm font-medium transition-all mb-6 disabled:opacity-60"
-                        style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.10)" }}
-                        onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.09)")}
-                        onMouseLeave={e => (e.currentTarget.style.background = "rgba(255,255,255,0.05)")}
+                        className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl text-on-surface bg-surface-container hover:bg-surface-variant text-sm font-medium transition-colors mb-6 disabled:opacity-60 border border-outline-variant/20"
                     >
                         {googleLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : (
                             <svg className="w-4 h-4" viewBox="0 0 24 24">
@@ -107,9 +81,9 @@ export default function RegisterPage() {
                     </button>
 
                     <div className="flex items-center gap-3 mb-6">
-                        <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.08)" }} />
-                        <span className="text-zinc-600 text-xs font-medium">OR</span>
-                        <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.08)" }} />
+                        <div className="flex-1 h-px bg-outline-variant/30" />
+                        <span className="text-on-surface-variant text-xs font-medium">OR</span>
+                        <div className="flex-1 h-px bg-outline-variant/30" />
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-4">
@@ -119,36 +93,30 @@ export default function RegisterPage() {
                             { icon: Phone, type: "tel", value: phone, setter: setPhone, placeholder: "Phone number (optional)", required: false },
                         ].map(({ icon: Icon, type, value, setter, placeholder, required }) => (
                             <div key={placeholder} className="relative">
-                                <Icon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                                <Icon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-on-surface-variant" />
                                 <input
                                     type={type}
                                     value={value}
                                     onChange={e => setter(e.target.value)}
                                     placeholder={placeholder}
                                     required={required}
-                                    className="w-full rounded-xl pl-11 pr-4 py-3 text-white placeholder:text-zinc-600 text-sm outline-none transition-all"
-                                    style={inputStyle}
-                                    onFocus={focusInput}
-                                    onBlur={blurInput}
+                                    className="w-full rounded-xl pl-11 pr-4 py-3 text-on-surface placeholder:text-on-surface-variant/70 text-sm outline-none transition-all bg-surface border border-outline-variant/30 focus:border-primary focus:ring-2 focus:ring-primary/20"
                                 />
                             </div>
                         ))}
 
                         <div className="relative">
-                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-on-surface-variant" />
                             <input
                                 type={showPass ? "text" : "password"}
                                 value={password}
                                 onChange={e => setPassword(e.target.value)}
                                 placeholder="Password (min 6 characters)"
                                 required
-                                className="w-full rounded-xl pl-11 pr-11 py-3 text-white placeholder:text-zinc-600 text-sm outline-none transition-all"
-                                style={inputStyle}
-                                onFocus={focusInput}
-                                onBlur={blurInput}
+                                className="w-full rounded-xl pl-11 pr-11 py-3 text-on-surface placeholder:text-on-surface-variant/70 text-sm outline-none transition-all bg-surface border border-outline-variant/30 focus:border-primary focus:ring-2 focus:ring-primary/20"
                             />
                             <button type="button" onClick={() => setShowPass(!showPass)}
-                                className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors">
+                                className="absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface transition-colors">
                                 {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                             </button>
                         </div>
@@ -156,22 +124,16 @@ export default function RegisterPage() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full py-3 rounded-xl text-white font-semibold text-sm transition-all flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed hover:scale-[1.02]"
-                            style={{
-                                background: "linear-gradient(135deg, #7C3AED 0%, #22D3EE 100%)",
-                                boxShadow: "0 0 24px rgba(124,58,237,0.40)",
-                            }}
+                            className="w-full py-3 rounded-xl text-on-primary font-semibold text-sm transition-all flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed hover:-translate-y-0.5 glass-gradient shadow-[0_10px_20px_-5px_rgba(16,185,129,0.3)] mt-6"
                         >
                             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
                             Create Account
                         </button>
                     </form>
 
-                    <p className="text-center text-zinc-500 text-sm mt-6">
+                    <p className="text-center text-on-surface-variant text-sm mt-6">
                         Already have an account?{" "}
-                        <Link href="/auth/login" className="font-medium transition-colors" style={{ color: "#9F67FF" }}
-                            onMouseEnter={e => (e.currentTarget.style.color = "#22D3EE")}
-                            onMouseLeave={e => (e.currentTarget.style.color = "#9F67FF")}>
+                        <Link href="/auth/login" className="font-medium transition-colors text-primary hover:text-primary-container">
                             Sign in
                         </Link>
                     </p>
